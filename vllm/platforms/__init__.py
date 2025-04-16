@@ -242,6 +242,7 @@ def resolve_current_platform_cls_qualname() -> str:
         platform_cls_qualname = "vllm.platforms.interface.UnspecifiedPlatform"
         logger.info(
             "No platform detected, vLLM is running on UnspecifiedPlatform")
+    logger.info("Platform plugin %s is activated", platform_cls_qualname)
     return platform_cls_qualname
 
 
