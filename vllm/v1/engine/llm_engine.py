@@ -208,6 +208,7 @@ class LLMEngine:
 
             # Make a new RequestState and queue.
             self.output_processor.add_request(child_request, parent_req, idx)
+
             # Add the request to EngineCore.
             self.engine_core.add_request(child_request)
 

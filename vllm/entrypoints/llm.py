@@ -249,6 +249,9 @@ class LLM:
             engine_args=engine_args, usage_context=UsageContext.LLM_CLASS)
         self.engine_class = type(self.llm_engine)
 
+        # 用于全局唯一的request_id，
+        # 在vLLM中内核引擎的处理中，1个prompt视为1个request，分配全局唯一的request_id
+        # ==============================================================================
         self.request_counter = Counter()
         self.default_sampling_params: Union[dict[str, Any], None] = None
 
@@ -1416,12 +1419,27 @@ class LLM:
             )
 
         # Run the engine.
+
+        # ===========================================================================
+        # 如果当前调度器中还有没完成推理的请求（调度器中waiting/running/swapped任一队列非空）
+        # ===========================================================================
+
+
         outputs: list[Union[RequestOutput, PoolingRequestOutput]] = []
         total_in_toks = 0
         total_out_toks = 0
         while self.llm_engine.has_unfinished_requests():
+
+            # =========================================================================
+            # 执行1次推理调度（step），决定哪些请求的数据可以参与到这次推理中
+            # =========================================================================
             step_outputs = self.llm_engine.step()
             for output in step_outputs:
+
+                # =====================================================================
+                # 如果本step后，有请求已经完成了推理，就将推理结果装进outputs中
+                # =====================================================================
+
                 if output.finished:
                     outputs.append(output)
                     if use_tqdm:

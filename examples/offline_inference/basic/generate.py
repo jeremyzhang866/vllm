@@ -9,7 +9,7 @@ def create_parser():
     # Add engine args
     engine_group = parser.add_argument_group("Engine arguments")
     EngineArgs.add_cli_args(engine_group)
-    engine_group.set_defaults(model="meta-llama/Llama-3.2-1B-Instruct")
+    engine_group.set_defaults(model="facebook/opt-125m")
     # Add sampling params
     sampling_group = parser.add_argument_group("Sampling parameters")
     sampling_group.add_argument("--max-tokens", type=int)

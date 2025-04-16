@@ -12,6 +12,8 @@ from typing import (TYPE_CHECKING, Any, Callable, ClassVar, Deque, Dict,
 from typing import Sequence as GenericSequence
 from typing import Set, Type, Union, cast, overload
 
+import json
+
 import torch
 from typing_extensions import TypeVar, deprecated
 

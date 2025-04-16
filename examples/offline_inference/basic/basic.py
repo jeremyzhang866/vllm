@@ -3,11 +3,15 @@
 from vllm import LLM, SamplingParams
 
 # Sample prompts.
+# prompts = [
+#     "Hello, my name is",
+#     "The president of the United States is",
+#     "The capital of France is",
+#     "The future of AI is",
+# ]
+
 prompts = [
-    "Hello, my name is",
-    "The president of the United States is",
-    "The capital of France is",
-    "The future of AI is",
+    "ai infra is"
 ]
 # Create a sampling params object.
 sampling_params = SamplingParams(temperature=0.8, top_p=0.95)

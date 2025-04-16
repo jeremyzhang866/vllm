@@ -828,6 +828,7 @@ class SequenceGroup:
 
     def get_max_num_running_seqs(self) -> int:
         """The maximum number of sequences running in parallel in the remaining
+         返回请求在其剩余生命周期中并行运行的最大序列数。
         lifetime of the request."""
         if self.is_single_seq:
             return 0 if self.first_seq.is_finished() else 1

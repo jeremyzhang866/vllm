@@ -17,7 +17,7 @@ from vllm.utils import Device
 SeqId = int
 EncoderSeqId = str
 
-
+# 它只负责管理和分配物理块，映射关系潜藏在seq中
 class SelfAttnBlockSpaceManager(BlockSpaceManager):
     """BlockSpaceManager which manages the allocation of KV cache.
 
