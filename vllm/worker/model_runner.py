@@ -1354,6 +1354,8 @@ class GPUModelRunnerBase(ModelRunnerBase[TModelInputForGPU]):
             finished_requests_ids = [seq.request_id for seq in seqs]
             model_input = self.prepare_model_input(
                 seqs, finished_requests_ids=finished_requests_ids)
+
+            # pp 怎么准备 和 传输的呢； in V0
             intermediate_tensors = None
             if not get_pp_group().is_first_rank:
                 intermediate_tensors = \
@@ -1764,6 +1766,7 @@ class ModelRunner(GPUModelRunnerBase[ModelInputForGPUWithSamplingMetadata]):
             model_forward_end = torch.cuda.Event(enable_timing=True)
             model_forward_start.record()
 
+        # 执行模型传输
         if not bypass_model_exec:
             with set_forward_context(model_input.attn_metadata,
                                      self.vllm_config, virtual_engine):

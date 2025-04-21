@@ -187,6 +187,7 @@ class InputPreprocessor:
         """
         Apply the model's tokenizer to a text prompt, returning the
         corresponding token IDs.
+        负责将文本形式的 prompt 转换为 token 序列，供模型使用。
         """
         tokenizer = self.get_tokenizer_group()
         add_special_tokens = None
@@ -321,9 +322,11 @@ class InputPreprocessor:
 
         * :class:`SingletonInputs` instance
         """
+        # 解析输入，判断它是文本、token 列表或多模态数据
         parsed = parse_singleton_prompt(prompt)
 
         if parsed["type"] == "str":
+            # 如果输入是纯文本，则进行分词，得到 token ids
             prompt_text = parsed["content"]
             prompt_token_ids = self._tokenize_prompt(
                 prompt_text,
@@ -696,12 +699,14 @@ class InputPreprocessor:
         * :class:`DecoderOnlyInputs` instance
         """
 
+        # Step1: 提取 prompt 的组成部分，包括 token ids 和多模态数据
         prompt_comps = self._prompt_to_llm_inputs(
             prompt,
             lora_request=lora_request,
             return_mm_hashes=return_mm_hashes,
         )
 
+        # Step2: 生成 LLMInputs 对象，包含处理后的 prompt token ids 和可能存在的多模态数据
         return self._build_decoder_only_llm_inputs(
             prompt_comps,
             prompt_adapter_request=prompt_adapter_request,

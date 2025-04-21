@@ -38,6 +38,8 @@ logger = init_logger(__name__)
 class Worker(LocalOrDistributedWorkerBase):
     """A worker class that executes (a partition of) the model on a GPU.
 
+    直接适用于nvidia gpu
+
     Each worker is associated with a single GPU. The worker is responsible for
     maintaining the KV cache and executing the model on the GPU. In case of
     distributed inference, each worker is assigned a partition of the model.

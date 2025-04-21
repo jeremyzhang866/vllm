@@ -55,6 +55,9 @@ class SchedulingBudget:
     updated more than once when scheduling RUNNING requests. Since this won't
     happen if we only have chunked prefill scheduling, we can remove this
     feature from the API when chunked prefill is enabled by default.
+
+    通过设定的预算（如内存或 token 数量），在每次调度中控制并发请求的数量，防止资源过载。在 vLLM 中，SchedulingBudget 类定义了预算，包括 token_budget（token 数量上限）和 max_num_seqs（请求数量上限）。
+
     """
 
     token_budget: int
@@ -444,9 +447,11 @@ class Scheduler:
                 or self.cache_config.is_attention_free):
             version = "placeholder"
 
+        # 根据版本及配置选用不同的 BlockSpaceManager
         BlockSpaceManagerImpl = BlockSpaceManager.get_block_space_manager_class(
             version)
 
+        # 配置 GPU 和 CPU 块的数量
         num_gpu_blocks = cache_config.num_gpu_blocks
         if num_gpu_blocks:
             num_gpu_blocks //= pipeline_parallel_size
@@ -456,6 +461,7 @@ class Scheduler:
             num_cpu_blocks //= pipeline_parallel_size
 
         # Create the block space manager.
+        # 初始化 BlockSpaceManager 以管理内存块
         self.block_manager = BlockSpaceManagerImpl(
             block_size=self.cache_config.block_size,
             num_gpu_blocks=num_gpu_blocks,
@@ -961,6 +967,7 @@ class Scheduler:
             seq_group: The sequence group input.
         Returns:
             The priority of the sequence group.
+        首先考虑用户指定的优先级值，其次按照到达时间排序。
         """
         return seq_group.priority, seq_group.arrival_time
 
@@ -1029,6 +1036,7 @@ class Scheduler:
         self.running = running_queue
         return force_preemption_count
 
+    # 处于 waiting 队列中的请求转移到 running 队列。
     def _schedule_prefills(
         self,
         budget: SchedulingBudget,
@@ -1224,6 +1232,7 @@ class Scheduler:
         decodes. If there's a pressure on GPU memory, decode requests can
         be swapped or preempted.
         """
+        # 初始化预算，设置 token 和 sequence 的最大使用量
         # Include running requests to the budget.
         budget = SchedulingBudget(
             token_budget=self.scheduler_config.max_num_batched_tokens,
@@ -1231,6 +1240,7 @@ class Scheduler:
         )
         # Make sure we include num running seqs before scheduling prefill,
         # so that we don't schedule beyond max_num_seqs for prefill.
+        # 根据现有的运行任务，更新预算使用情况
         for seq_group in self.running:
             budget.add_num_seqs(seq_group.request_id,
                                 seq_group.get_max_num_running_seqs())
@@ -1238,11 +1248,13 @@ class Scheduler:
             seq_group.lora_int_id for seq_group in self.running
             if seq_group.lora_int_id > 0) if self.lora_enabled else None)
 
+        # 初始化预填充、运行和交换状态的调度结果
         prefills = SchedulerPrefillOutputs.create_empty()
         running_scheduled = SchedulerRunningOutputs.create_empty()
         swapped_in = SchedulerSwappedInOutputs.create_empty()
 
         # If any requests are swapped, prioritized swapped requests.
+        # 若无交换请求，优先处理预填充请求
         if not self.swapped:
             prefills = self._schedule_prefills(budget,
                                                curr_loras,

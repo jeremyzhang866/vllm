@@ -195,6 +195,8 @@ class LlamaAttention(nn.Module):
             prefix=f"{prefix}.attn",
         )
 
+    # 2025-04-18 默写
+    # TODO(Jeremy): to write
     def forward(
         self,
         positions: torch.Tensor,

@@ -23,7 +23,7 @@ class AllocStatus(enum.Enum):
     LATER = enum.auto()
     NEVER = enum.auto()
 
-
+# 负责实际的 GPU/CPU 内存块分配。它提供内存管理和内存交换机制，在 GPU 与 CPU 之间高效转移任务数据。
 class BlockSpaceManager(ABC):
 
     @staticmethod

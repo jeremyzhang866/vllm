@@ -1083,7 +1083,7 @@ async def run_server(args, **uvicorn_kwargs) -> None:
         def _listen_addr(a: str) -> str:
             if is_valid_ipv6_address(a):
                 return '[' + a + ']'
-            return a or "0.0.0.0"
+            return a or "127.0.0.1"
 
         is_ssl = args.ssl_keyfile and args.ssl_certfile
         logger.info("Starting vLLM API server on http%s://%s:%d",

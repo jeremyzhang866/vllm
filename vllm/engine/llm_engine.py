@@ -832,6 +832,7 @@ class LLMEngine:
         priority: int = 0,
     ) -> SequenceGroup:
         """Creates a SequenceGroup with SamplingParams."""
+        # 获取模型配置中的最大 logprobs 值
         max_logprobs = self.get_model_config().max_logprobs
         if (sampling_params.logprobs
                 and sampling_params.logprobs > max_logprobs) or (
@@ -840,6 +841,7 @@ class LLMEngine:
             raise ValueError(f"Cannot request more than "
                              f"{max_logprobs} logprobs.")
 
+        # 构建 logits 处理器
         sampling_params = self._build_logits_processors(
             sampling_params, lora_request)
 
@@ -847,6 +849,7 @@ class LLMEngine:
         # this doesn't deep-copy LogitsProcessor objects
         sampling_params = sampling_params.clone()
 
+        # 从生成配置中更新采样参数
         sampling_params.update_from_generation_config(
             self.generation_config_fields, seq.eos_token_id)
 
@@ -855,6 +858,7 @@ class LLMEngine:
         if self.vllm_config.speculative_config is not None:
             draft_size = \
                 self.vllm_config.speculative_config.num_speculative_tokens + 1
+        # 创建序列组
         seq_group = SequenceGroup(
             request_id=request_id,
             seqs=[seq],

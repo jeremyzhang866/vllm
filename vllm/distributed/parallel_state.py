@@ -137,6 +137,12 @@ class GroupCoordinator:
     GroupCoordinator takes charge of all the communication operations among
         the processes in the group. It manages both CPU and device
         communication.
+
+    tp
+    pp
+    torch要求必须在一个群里；局限性。
+    所有worker必须在一个大群。可以派生出小群。
+
     """
 
     # available attributes:
