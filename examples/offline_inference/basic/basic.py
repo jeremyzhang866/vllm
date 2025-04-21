@@ -14,7 +14,8 @@ from vllm import LLM, SamplingParams
 #     "ai infra is"
 # ]
 
-prompts = [f"AI is {i}" for i in range(10)]
+i = 10
+prompts = [f"AI is {i}" for i in range(i)]
 
 # Create a sampling params object.
 sampling_params = SamplingParams(temperature=0.8, top_p=0.95)
