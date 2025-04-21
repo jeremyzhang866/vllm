@@ -12,7 +12,7 @@ import torch
 from typing_extensions import ParamSpec
 
 # import custom ops, trigger op registration
-import vllm._C  # noqa
+# import vllm._C  # noqa
 import vllm.envs as envs
 from vllm.logger import init_logger
 from vllm.utils import import_pynvml
