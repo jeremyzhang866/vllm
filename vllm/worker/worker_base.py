@@ -540,6 +540,7 @@ class WorkerWrapperBase:
             del os.environ[key]
         update_environment_variables(envs)
 
+    # COMMENT(Jeremy: 2025-04-22 ): 初始化worker
     def init_worker(self, all_kwargs: List[Dict[str, Any]]) -> None:
         """
         Here we inject some common logic before initializing the worker.
@@ -591,6 +592,7 @@ class WorkerWrapperBase:
                     worker_extension_cls, worker_class, extended_calls)
         with set_current_vllm_config(self.vllm_config):
             # To make vLLM config available during worker initialization
+            # 2025-04-22 : 搞个worker
             self.worker = worker_class(**kwargs)
             assert self.worker is not None
 

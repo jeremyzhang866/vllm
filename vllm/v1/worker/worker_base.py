@@ -48,6 +48,7 @@ class WorkerBase(WorkerBaseV0):
         self.is_driver_worker = is_driver_worker
 
         # Device and model state
+        # 2025-04-22 : 就是gpu，看什么绑定
         self.device: Optional[torch.device] = None
         self.model_runner: Optional[nn.Module] = None
 

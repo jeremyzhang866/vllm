@@ -628,6 +628,7 @@ class CPUModelRunner(CPUModelRunnerBase[ModelInputForCPUWithSamplingMetadata]):
                                    virtual_engine=virtual_engine,
                                    is_prompt=is_prompt)
 
+    # COMMENT(Jeremy: 2025-04-22 ): 核心 model_execute
     @torch.no_grad()
     def execute_model(
         self,

@@ -180,7 +180,7 @@ class Handle:
     remote_subscribe_addr: Optional[str] = None
     remote_addr_ipv6: bool = False
 
-
+# COMMENT(Jeremy: 2025-04-22 ): 通过zmq实现消息订阅模式
 class MessageQueue:
 
     def __init__(
@@ -200,6 +200,7 @@ class MessageQueue:
         n_remote_reader = n_reader - n_local_reader
         self.n_remote_reader = n_remote_reader
 
+        # 2025-04-22 : zmq上下文
         context = Context()
 
         if n_local_reader > 0:
@@ -228,6 +229,7 @@ class MessageQueue:
             self.local_socket = None
             self.current_idx = -1
 
+        # 2025-04-22 : 涉及多机多卡
         remote_addr_ipv6 = False
         if n_remote_reader > 0:
             # for remote readers, we will:
@@ -254,11 +256,13 @@ class MessageQueue:
         # rank does not matter for remote readers
         self._is_remote_reader = False
 
+
+        # 2025-04-22 : 包含信息的集合上下文信息
         self.handle = Handle(
             local_reader_ranks=local_reader_ranks,
             buffer_handle=self.buffer.handle()
             if self.buffer is not None else None,
-            local_subscribe_addr=local_subscribe_addr,
+            local_subscribe_addr=local_subscribe_addr,  # 2025-04-22 : 进程间通信地址
             remote_subscribe_addr=remote_subscribe_addr,
             remote_addr_ipv6=remote_addr_ipv6,
         )
@@ -276,7 +280,7 @@ class MessageQueue:
 
         context = Context()
 
-        if rank in handle.local_reader_ranks:
+        if rank in handle.local_reader_ranks: # 2025-04-22 : 本地rank
             assert handle.buffer_handle is not None
             self.buffer = ShmRingBuffer(*handle.buffer_handle)
             self.current_idx = 0

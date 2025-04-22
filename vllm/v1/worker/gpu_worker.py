@@ -32,6 +32,7 @@ if TYPE_CHECKING:
     from vllm.v1.core.sched.output import SchedulerOutput
 
 
+# COMMENT(Jeremy: 2025-04-22 ): worker真正干活的
 class Worker(WorkerBase):
 
     def __init__(
@@ -109,6 +110,7 @@ class Worker(WorkerBase):
             self._sleep_saved_buffers = {}
 
     def init_device(self):
+        # 2025-04-22 : worker init_device
         if self.device_config.device.type == "cuda":
             # torch.distributed.all_reduce does not free the input tensor until
             # the synchronization point. This causes the memory usage to grow
@@ -312,12 +314,17 @@ def init_worker_distributed_environment(
     local_rank: int = -1,
 ) -> None:
     """Initialize the distributed environment."""
+    # 2025-04-22 :
+    #     1.初始化全局分布式通信组环境 _WORLD
+    #     2.初始化模型并行环境, 包括_TP, _PP等内部通信组环境
+
     parallel_config = vllm_config.parallel_config
     set_custom_all_reduce(not parallel_config.disable_custom_all_reduce)
 
     init_distributed_environment(parallel_config.world_size, rank,
                                  distributed_init_method, local_rank)
 
+    # 2025-04-22 : 内部通信
     ensure_model_parallel_initialized(parallel_config.tensor_parallel_size,
                                       parallel_config.pipeline_parallel_size)
 

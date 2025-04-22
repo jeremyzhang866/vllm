@@ -212,6 +212,7 @@ class LLMEngine:
             # Add the request to EngineCore.
             self.engine_core.add_request(child_request)
 
+    # COMMENT(Jeremy: 2025-04-22 )
     def step(self) -> list[RequestOutput]:
 
         if self.should_execute_dummy_batch:
@@ -220,9 +221,11 @@ class LLMEngine:
             return []
 
         # 1) Get EngineCoreOutput from the EngineCore.
+        # 2025-04-22 从engine_core拿结果 zmq
         outputs = self.engine_core.get_output()
 
         # 2) Process EngineCoreOutputs.
+        # 2025-04-22 : 处理拿解惑
         processed_outputs = self.output_processor.process_outputs(
             outputs.outputs)
 

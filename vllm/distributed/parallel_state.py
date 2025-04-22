@@ -124,6 +124,7 @@ if supports_custom_op():
     )
 
 
+# COMMENT(Jeremy: 2025-04-22 ): 自定义通信组 GroupCoordinator
 class GroupCoordinator:
     """
     PyTorch ProcessGroup wrapper for a group of processes.
@@ -177,7 +178,12 @@ class GroupCoordinator:
         self.device_group = None
         self.cpu_group = None
 
+        # 2025-04-22 :ranks是列表  用torch定义通信组
         for ranks in group_ranks:
+
+            # 2025-04-22 : torch特性 保证各个小群 全部信息一致。
+            # torch特性，所有rank都要new通信组，就算自己不在组内,解释是：保证每个rank都知道全局的通信情况，整个通信系统的状态每个rank要统一
+
             device_group = torch.distributed.new_group(
                 ranks, backend=torch_distributed_backend)
             # a group with `gloo` backend, to allow direct coordination between
@@ -812,6 +818,7 @@ def init_distributed_environment(
     local_rank: int = -1,
     backend: str = "nccl",
 ):
+    # 2025-04-22 : init_distributed_environment
     logger.debug(
         "world_size=%d rank=%d local_rank=%d "
         "distributed_init_method=%s backend=%s", world_size, rank, local_rank,
@@ -820,9 +827,11 @@ def init_distributed_environment(
     config = get_current_vllm_config()
     if config is not None and config.parallel_config.data_parallel_size > 1:
         parallel_config = config.parallel_config
+
         # adjust to take into account data parallelism
         # offset the rank by the data parallel rank
         rank = parallel_config.data_parallel_rank * world_size + rank
+
         # adjust the world size to take into account data parallelism
         world_size = parallel_config.world_size_across_dp
         ip = parallel_config.data_parallel_master_ip
@@ -853,7 +862,10 @@ def init_distributed_environment(
             local_rank = rank
     global _WORLD
     if _WORLD is None:
+        # 2025-04-22 : 确定通信组
         ranks = list(range(torch.distributed.get_world_size()))
+
+        # 2025-04-22 : 获取全局world_size + rank 创建一个通信组
         _WORLD = init_world_group(ranks, local_rank, backend)
     else:
         assert _WORLD.world_size == torch.distributed.get_world_size(), (
@@ -914,6 +926,7 @@ def initialize_model_parallel(
         tensor_model_parallel_size)  # noqa
 
     # Build the tensor model-parallel groups.
+    # 2025-04-22 : TP初始化
     global _TP
     assert _TP is None, ("tensor model parallel group is already initialized")
     group_ranks = all_ranks.view(-1, tensor_model_parallel_size).unbind(0)
@@ -927,6 +940,8 @@ def initialize_model_parallel(
                                     group_name="tp")
 
     # Build the pipeline model-parallel groups.
+    # 2025-04-22 : 类似于数学变化reshape
+    # 2025-04-22 : PP初始化
     global _PP
     assert _PP is None, (
         "pipeline model parallel group is already initialized")
@@ -938,6 +953,7 @@ def initialize_model_parallel(
                                     backend,
                                     group_name="pp")
 
+    # 2025-04-22 : DP初始化
     global _DP
     assert _DP is None, ("data parallel group is already initialized")
     group_ranks = all_ranks.transpose(1,

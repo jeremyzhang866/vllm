@@ -119,6 +119,7 @@ class GPUModelRunner(LoRAModelRunnerMixin):
         self.hidden_size = model_config.get_hidden_size()
         self.attention_chunk_size = model_config.attention_chunk_size
 
+        # 2025-04-22 : 不同attn可能对batch有点不同
         self.attn_backend = get_attn_backend(
             self.head_size,
             self.dtype,
@@ -177,6 +178,7 @@ class GPUModelRunner(LoRAModelRunnerMixin):
         # Request states.
         self.requests: dict[str, CachedRequestState] = {}
         # Persistent batch.
+        # 2025-04-22 : 预分配
         self.input_batch = InputBatch(
             max_num_reqs=self.max_num_reqs,
             max_model_len=self.max_model_len,

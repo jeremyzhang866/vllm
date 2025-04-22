@@ -44,6 +44,7 @@ EXECUTE_MODEL_TIMEOUT_S = 30
 class MultiprocExecutor(Executor):
 
     def _init_executor(self) -> None:
+        # COMMENT(Jeremy: 2025-04-22 ): 初始化init 函数，来搞多个 进程
         # Call self.shutdown at exit to clean up
         # and ensure workers will be terminated.
         self._finalizer = weakref.finalize(self, self.shutdown)
@@ -76,6 +77,7 @@ class MultiprocExecutor(Executor):
         unready_workers: list[UnreadyWorkerProcHandle] = []
         success = False
         try:
+            # 2025-04-22 : 开始了分布式
             for rank in range(self.world_size):
                 unready_workers.append(
                     WorkerProc.make_worker_process(
@@ -170,6 +172,8 @@ class MultiprocExecutor(Executor):
             else:
                 send_method = cloudpickle.dumps(
                     method, protocol=pickle.HIGHEST_PROTOCOL)
+
+            # COMMENT(Jeremy: 2025-04-22 ): 执行任务入队
             self.rpc_broadcast_mq.enqueue(
                 (send_method, args, kwargs, rank0_reply_only))
 
@@ -261,6 +265,7 @@ class WorkerProcHandle:
         )
 
 
+# COMMENT(Jeremy: 2025-04-22 ): WorkerProc
 class WorkerProc:
     """Wrapper that runs one Worker in a separate process."""
 
@@ -287,6 +292,7 @@ class WorkerProc:
             "distributed_init_method": distributed_init_method,
             "is_driver_worker": rank == 0,
         }
+        # 2025-04-22 : 实例化 worker，没有加载环境
         wrapper.init_worker(all_kwargs)
         self.worker = wrapper
 
@@ -302,6 +308,7 @@ class WorkerProc:
         self.worker_response_mq = MessageQueue(1, 1)
 
         # Initialize device and loads weights
+        # 2025-04-22 : 绑定设备，加载模型
         self.worker.init_device()
         self.worker.load_model()
 
@@ -326,6 +333,7 @@ class WorkerProc:
             "ready_pipe": (reader, writer),
         }
         # Run EngineCore busy loop in background process.
+        # COMMENT(Jeremy: 2025-04-22 ): 开启子进程
         proc = context.Process(target=WorkerProc.worker_main,
                                kwargs=process_kwargs,
                                name=f"VllmWorker-{rank}",
@@ -452,9 +460,12 @@ class WorkerProc:
         SUCCESS = auto()
         FAILURE = auto()
 
+    # COMMENT(Jeremy: 2025-04-22 ): worker_busy_loop
     def worker_busy_loop(self):
         """Main busy loop for Multiprocessing Workers"""
         while True:
+
+            # COMMENT(Jeremy: 2025-04-22 ): 推理任务出队
             method, args, kwargs, rank0_only = self.rpc_broadcast_mq.dequeue()
 
             try:

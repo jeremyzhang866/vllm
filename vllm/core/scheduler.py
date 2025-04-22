@@ -693,7 +693,7 @@ class Scheduler:
         ret.decode_seq_groups_list.clear()
         ret.prefill_seq_groups_list.clear()
 
-        # Blocks that need to be swapped or copied before model execution.
+        # Blocks that need to be swapped or copied before model execution.docs
         blocks_to_swap_out: List[Tuple[int, int]] = ret.blocks_to_swap_out
         blocks_to_copy: List[Tuple[int, int]] = ret.blocks_to_copy
 
