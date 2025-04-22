@@ -26,7 +26,7 @@ def main():
 
     # COMMENT(Jeremy: 2025-04-22 ): 在生成llm时已经生成了IIm_engine; llm_engine中已经生成了tokenizer, processor,output_processor, engine_core;engine_core中会开启EngineCore幕后进程, 只是在等待接收请求
 
-    llm = LLM(model="TinyLlama/TinyLlama-1.1B-Chat-v0.6 model")
+    llm = LLM(model="TinyLlama/TinyLlama-1.1B-Chat-v0.6")
     # Generate texts from the prompts.
     # The output is a list of RequestOutput objects
     # that contain the prompt, generated text, and other information.
