@@ -269,11 +269,14 @@ class CoreEngine:
         self.identity = index.to_bytes(length=2, byteorder="little")
         try:
             # Start EngineCore in background process.
+            # 2025-04-22 : start a BackgroundProcHandle
             self.proc_handle = BackgroundProcHandle(
                 input_path=input_path,
                 output_path=output_path,
                 process_name=f"EngineCore_{index}",
+
                 target_fn=EngineCoreProc.run_engine_core,
+
                 process_kwargs={
                     "vllm_config": vllm_config,
                     "dp_rank": index,

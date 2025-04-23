@@ -281,6 +281,7 @@ class LLMEngine:
         self.input_processor = input_registry.create_input_processor(
             self.model_config)
 
+        # 2025-04-22 : 初始化model_executor
         self.model_executor = executor_class(vllm_config=vllm_config, )
 
         if self.model_config.runner_type != "pooling":
@@ -454,6 +455,7 @@ class LLMEngine:
     @classmethod
     def _get_executor_cls(cls,
                           engine_config: VllmConfig) -> Type[ExecutorBase]:
+        # 2025-04-22 : 决定分布式后端
         # distributed_executor_backend must be set in VllmConfig.__post_init__
         distributed_executor_backend = (
             engine_config.parallel_config.distributed_executor_backend)

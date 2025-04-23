@@ -411,6 +411,7 @@ class EngineCoreProc(EngineCore):
                 parallel_config.data_parallel_rank_local = local_dp_rank
                 engine_core = DPEngineCoreProc(*args, **kwargs)
             else:
+                # 2025-04-22 : 启动个engine_core
                 engine_core = EngineCoreProc(*args, **kwargs)
 
             # COMMENT(Jeremy: 2025-04-22 ): 不断接受请求

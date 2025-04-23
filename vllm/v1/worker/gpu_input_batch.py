@@ -19,6 +19,7 @@ from vllm.v1.worker.block_table import BlockTable
 _SAMPLING_EPS = 1e-5
 
 
+# COMMENT(Jeremy: 2025-04-23 ):   - Persistent batching
 @dataclass
 class CachedRequestState:
 
@@ -85,6 +86,8 @@ class InputBatch:
             pin_memory=False,
         )
         self.token_ids_cpu = self.token_ids_cpu_tensor.numpy()
+
+        # 2025-04-23 : Persistent batching allocate 大的tensor pool，每次只做小的改动，改动从cpu到gpu 避面在每次大的batch 做大的改动
         self.num_tokens = np.zeros(max_num_reqs, dtype=np.int32)
         self.num_tokens_no_spec = np.zeros(max_num_reqs, dtype=np.int32)
         self.num_prompt_tokens = np.zeros(max_num_reqs, dtype=np.int32)

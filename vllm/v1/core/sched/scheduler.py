@@ -32,6 +32,7 @@ from vllm.v1.structured_output import StructuredOutputManager
 logger = init_logger(__name__)
 
 
+# COMMENT(Jeremy: 2025-04-23 ): v1 Scheduler 易读
 class Scheduler(SchedulerInterface):
 
     def __init__(
