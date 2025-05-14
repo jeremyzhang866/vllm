@@ -74,6 +74,8 @@ Tensor parallelism (`tensor_parallel_size` option) can be used to split the mode
 The following code splits the model across 2 GPUs.
 
 ```python
+from vllm import LLM
+
 llm = LLM(model="ibm-granite/granite-3.1-8b-instruct",
           tensor_parallel_size=2)
 ```
@@ -95,7 +97,7 @@ You can convert the model checkpoint to a sharded checkpoint using <gh-file:exam
 
 Quantized models take less memory at the cost of lower precision.
 
-Statically quantized models can be downloaded from HF Hub (some popular ones are available at [Neural Magic](https://huggingface.co/neuralmagic))
+Statically quantized models can be downloaded from HF Hub (some popular ones are available at [Red Hat AI](https://huggingface.co/RedHatAI))
 and used directly without extra configuration.
 
 Dynamic quantization is also supported via the `quantization` option -- see [here](#quantization-index) for more details.
