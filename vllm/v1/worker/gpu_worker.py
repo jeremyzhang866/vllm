@@ -348,7 +348,8 @@ def init_worker_distributed_environment(
 
     # 2025-04-22 : 内部通信
     ensure_model_parallel_initialized(parallel_config.tensor_parallel_size,
-                                      parallel_config.pipeline_parallel_size)
+                                      parallel_config.pipeline_parallel_size,
+                                      parallel_config.enable_expert_parallel)
 
     ensure_kv_transfer_initialized(vllm_config)
 
