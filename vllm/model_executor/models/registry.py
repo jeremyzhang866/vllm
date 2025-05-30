@@ -142,7 +142,7 @@ _EMBEDDING_MODELS = {
     "ModernBertModel": ("modernbert", "ModernBertModel"),
     "NomicBertModel": ("bert_with_rope", "NomicBertModel"),
     "Phi3ForCausalLM": ("phi3", "Phi3ForCausalLM"),
-    "Qwen2Model": ("qwen2", "Qwen2EmbeddingModel"),
+    "Qwen2Model": ("qwen2", "Qwen2ForCausalLM"),
     "Qwen2ForCausalLM": ("qwen2", "Qwen2ForCausalLM"),
     "Qwen2ForRewardModel": ("qwen2_rm", "Qwen2ForRewardModel"),
     "Qwen2ForProcessRewardModel": ("qwen2_rm", "Qwen2ForProcessRewardModel"),
@@ -383,7 +383,7 @@ class _ModelRegistry:
 
         `model_cls` can be either:
 
-        - A {class}`torch.nn.Module` class directly referencing the model.
+        - A [`torch.nn.Module`][] class directly referencing the model.
         - A string in the format `<module>:<class>` which can be used to
           lazily import the model. This is useful to avoid initializing CUDA
           when importing the model and thus the related error
