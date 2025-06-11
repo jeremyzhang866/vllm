@@ -7,10 +7,18 @@ from vllm.custom_utils.custom_logging import init_logger
 logger = init_logger(__name__)
 
 def format_time(elapsed_us):
-    """辅助函数：将微秒转换为毫秒+微秒格式"""
-    ms = int(elapsed_us // 1000)
-    us = int(elapsed_us % 1000)
-    return f"{ms}ms, {us:03d}us"
+    """
+    辅助函数：将输入的微秒值同时转换为毫秒和微秒格式显示
+    Args:
+        elapsed_us: 耗时（以微秒为单位）
+    Returns:
+        格式化的时间字符串，同时显示毫秒和微秒
+    Example:
+        input: 1234567 微秒
+        output: "1234.567 ms (1234567 us)"
+    """
+    ms = elapsed_us / 1000.0  # 转换为浮点型毫秒
+    return f"{ms:.3f} ms ({int(elapsed_us)} us)"
 
 def log_execution_time(theme=""):
     """
@@ -107,42 +115,42 @@ class AsyncTimer:
 #         for i in range(n):
 #             total += i * i
 #         return total
-#
+
 # svc = MyService()
 # result = svc.compute(1000000)
-#
-#
-#
+
+
+
 # def process_data(data):
 #     with Timer(label="数据处理", theme="BatchJob"):
 #         # 模拟数据处理
 #         processed = [d**2 for d in data]
 #     return processed
-#
+
 # process_data(range(100000))
-#
-#
+
+
 # import asyncio
-#
+
 # async def async_task():
 #     async with AsyncTimer(label="异步任务", theme="AsyncJob"):
 #         await asyncio.sleep(0.8)
 #     print("任务完成")
-#
+
 # asyncio.run(async_task())
-#
-#
-#
+
+
+
 # class AsyncWorker:
 #     @log_execution_time(theme="AsyncWorker")
 #     async def fetch_data(self, url):
 #         # 模拟异步 IO
 #         await asyncio.sleep(1.2)
 #         return {"data": "ok"}
-#
+
 # async def main():
 #     worker = AsyncWorker()
 #     res = await worker.fetch_data("http://example.com")
 #     print(res)
-#
+
 # asyncio.run(main())
