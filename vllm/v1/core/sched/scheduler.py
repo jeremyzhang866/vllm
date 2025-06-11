@@ -32,6 +32,9 @@ from vllm.v1.request import Request, RequestStatus
 from vllm.v1.spec_decode.metrics import SpecDecodingStats
 from vllm.v1.structured_output import StructuredOutputManager
 
+from vllm.custom_utils.timing_utils import log_execution_time
+from vllm.custom_utils.timing_utils import AsyncTimer, Timer
+
 logger = init_logger(__name__)
 
 
@@ -371,9 +374,10 @@ class Scheduler(SchedulerInterface):
 
                     # Get externally-cached tokens if using a KVConnector.
                     if self.connector is not None:
-                        num_external_computed_tokens, load_kv_async = (
-                            self.connector.get_num_new_matched_tokens(
-                                request, num_new_local_computed_tokens))
+                        with Timer(label="connector.get_num_new_matched_tokens", theme="vllm schedule"):
+                            num_external_computed_tokens, load_kv_async = (
+                                self.connector.get_num_new_matched_tokens(
+                                    request, num_new_local_computed_tokens))
 
                     # Total computed tokens (local + external).
                     num_computed_tokens = (num_new_local_computed_tokens +
