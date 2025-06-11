@@ -136,7 +136,7 @@ If the dataset you want to benchmark is not supported yet in vLLM, even then you
 ```
 {"prompt": "What is the capital of India?"}
 {"prompt": "What is the capital of Iran?"}
-{"prompt": "What is the capital of China?"}
+{"prompt": "What is the capital of China?"}`
 ``` 
 
 ```bash
