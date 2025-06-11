@@ -6,9 +6,15 @@ from custom_logging import init_logger
 
 logger = init_logger(__name__)
 
+def format_time(elapsed_us):
+    """辅助函数：将微秒转换为毫秒+微秒格式"""
+    ms = int(elapsed_us // 1000)
+    us = int(elapsed_us % 1000)
+    return f"{ms}ms, {us:03d}us"
+
 def log_execution_time(theme=""):
     """
-    通用装饰器：在函数执行前后分别打印日志并计算耗时（us）。
+    通用装饰器：在函数执行前后分别打印日志并计算耗时。
     支持同步和异步函数。
     """
     def decorator(func):
@@ -23,8 +29,8 @@ def log_execution_time(theme=""):
             result = await func(*args, **kwargs)
             elapsed = (time.perf_counter() - start) * 1_000_000  # us
             logger.info(
-                "[%s] %s 执行结束，耗时: %.3f us",
-                theme, name, elapsed,
+                "[%s] %s 执行结束，耗时: %s",
+                theme, name, format_time(elapsed)
             )
             return result
 
@@ -37,8 +43,8 @@ def log_execution_time(theme=""):
             result = func(*args, **kwargs)
             elapsed = (time.perf_counter() - start) * 1_000_000  # us
             logger.info(
-                "[%s] %s 执行结束，耗时: %.3f us",
-                theme, name, elapsed,
+                "[%s] %s 执行结束，耗时: %s",
+                theme, name, format_time(elapsed)
             )
             return result
 
@@ -49,7 +55,7 @@ def log_execution_time(theme=""):
 class Timer:
     """
     支持 with Timer(...) 作为上下文管理器使用，
-    在 __enter__ 和 __exit__ 中打印开始/结束日志及耗时（us）。
+    在 __enter__ 和 __exit__ 中打印开始/结束日志及耗时。
     """
     def __init__(self, label="代码块", theme=""):
         self.label = label
@@ -64,15 +70,15 @@ class Timer:
     def __exit__(self, exc_type, exc_val, exc_tb):
         elapsed = (time.perf_counter() - self._start) * 1_000_000  # us
         logger.info(
-            "[%s] %s 执行结束，耗时: %.3f us",
-            self.theme or "Timer", self.label, elapsed,
+            "[%s] %s 执行结束，耗时: %s",
+            self.theme or "Timer", self.label, format_time(elapsed)
         )
         return False  # 不屏蔽异常
 
 class AsyncTimer:
     """
     支持 async with AsyncTimer(...) 作为异步上下文管理器使用，
-    在 __aenter__ 和 __aexit__ 中打印开始/结束日志及耗时（us）。
+    在 __aenter__ 和 __aexit__ 中打印开始/结束日志及耗时。
     """
     def __init__(self, label="代码块", theme=""):
         self.label = label
@@ -87,8 +93,8 @@ class AsyncTimer:
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         elapsed = (time.perf_counter() - self._start) * 1_000_000  # us
         logger.info(
-            "[%s] %s 执行结束，耗时: %.3f us",
-            self.theme or "AsyncTimer", self.label, elapsed,
+            "[%s] %s 执行结束，耗时: %s",
+            self.theme or "AsyncTimer", self.label, format_time(elapsed)
         )
         return False  # 不屏蔽异常
 
