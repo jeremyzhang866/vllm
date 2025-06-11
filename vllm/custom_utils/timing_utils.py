@@ -2,7 +2,7 @@
 import time
 import functools
 import inspect
-from vllm.logger import init_logger
+from custom_logging import init_logger
 
 logger = init_logger(__name__)
 
