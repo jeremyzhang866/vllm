@@ -1,4 +1,4 @@
-# Copyright 2024-2025 LMCache Authors.
+# Copyright 2024-2025 VLLM Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,10 +20,9 @@ import os
 
 def build_format(color):
     reset = "\x1b[0m"
-    underline = "\x1b[3m"
+    # underline = "\x1b[3m"  # 不再需要
     return (
-        f"{color}[%(asctime)s] LMCache %(levelname)s:{reset} %(message)s "
-        f"{underline}(%(filename)s:%(lineno)d:%(name)s){reset}"
+        f"{color}[%(asctime)s] VLLM %(levelname)s:{reset} %(message)s"
     )
 
 
@@ -51,7 +50,7 @@ class CustomFormatter(logging.Formatter):
 
 def get_log_level() -> int:
     """
-    Try to read LMCACHE_LOG_LEVEL from environment variables.
+    Try to read VLLM_LOG_LEVEL from environment variables.
     Could be:
     - DEBUG
     - INFO
@@ -61,7 +60,7 @@ def get_log_level() -> int:
 
     If not found, defaults to INFO.
     """
-    log_level = os.getenv("LMCACHE_LOG_LEVEL", "INFO").upper()
+    log_level = os.getenv("VLLM_LOG_LEVEL", "INFO").upper()
     return getattr(logging, log_level, logging.INFO)
 
 
@@ -97,7 +96,7 @@ if __name__ == "__main__":
 # from logging import Logger
 #
 # logging.basicConfig(
-#    format="\033[33m%(levelname)s LMCache: \033[0m%(message)s "
+#    format="\033[33m%(levelname)s VLLM: \033[0m%(message)s "
 #    "[%(asctime)s] -- %(pathname)s:%(lineno)d",
 #    level=logging.INFO,
 # )
