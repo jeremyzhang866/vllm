@@ -339,10 +339,10 @@ class OutputProcessor:
                 # Ignore output for already-aborted request.
                 continue
             if req_state.is_prefilling and req_state.stats.arrival_time:
-                prefill_time = datetime.datetime.now() - req_state.stats.arrival_time
+                prefill_time = datetime.datetime.now() - datetime.datetime.fromtimestamp(req_state.stats.arrival_time)
                 total_milliseconds = abs(prefill_time.total_seconds() * 1000)
                 total_seconds = total_milliseconds / 1000
-                logger.info("req_id: {} prompt_len: {} 耗时: {total_milliseconds:.0f} ms ({total_seconds:.3f} s)}",req_id, req_state.prompt_len, total_milliseconds, total_seconds)
+                logger.info(f"req_id: {req_id} prompt_len: {req_state.prompt_len} 耗时: {total_milliseconds:.0f} ms ({total_seconds:.3f} s)")
 
             # 1) Compute stats for this iteration.
             self._update_stats_from_output(req_state, engine_core_output,
