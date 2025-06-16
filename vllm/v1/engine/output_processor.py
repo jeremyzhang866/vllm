@@ -5,7 +5,9 @@ import asyncio
 from collections.abc import Iterable
 from dataclasses import dataclass
 from typing import Any, Optional, Union
+import datetime
 
+from vllm.logger import init_logger
 from vllm.outputs import CompletionOutput, RequestOutput
 from vllm.sampling_params import RequestOutputKind
 from vllm.transformers_utils.tokenizer import AnyTokenizer
@@ -17,6 +19,7 @@ from vllm.v1.engine.parallel_sampling import ParentRequest
 from vllm.v1.metrics.stats import (IterationStats, LoRARequestStates,
                                    RequestStateStats)
 
+logger = init_logger(__name__)
 
 class RequestOutputCollector:
     """
@@ -335,6 +338,11 @@ class OutputProcessor:
             if req_state is None:
                 # Ignore output for already-aborted request.
                 continue
+            if req_state.is_prefilling and req_state.stats.arrival_time:
+                prefill_time = datetime.datetime.now() - req_state.stats.arrival_time
+                total_milliseconds = abs(prefill_time.total_seconds() * 1000)
+                total_seconds = total_milliseconds / 1000
+                logger.info("req_id: {} prompt_len: {} 耗时: {total_milliseconds:.0f} ms ({total_seconds:.3f} s)}",req_id, req_state.prompt_len, total_milliseconds, total_seconds)
 
             # 1) Compute stats for this iteration.
             self._update_stats_from_output(req_state, engine_core_output,
