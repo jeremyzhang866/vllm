@@ -64,6 +64,11 @@ def _print_warning_once(logger: Logger, msg: str, *args: Hashable) -> None:
     # Set the stacklevel to 2 to print the original caller's line info
     logger.warning(msg, *args, stacklevel=2)
 
+class EndpointFilter(logging.Filter):
+    def filter(self, record: logging.LogRecord) -> bool:
+        # 忽略包含 /metrics 或 /v1/ 的请求日志
+        msg = record.getMessage()
+        return ("/metrics" not in msg) and ("/v1/" not in msg)
 
 class _VllmLogger(Logger):
     """
@@ -130,6 +135,7 @@ def init_logger(name: str) -> _VllmLogger:
     already been configured."""
 
     logger = logging.getLogger(name)
+    logging.getLogger("uvicorn.access").addFilter(EndpointFilter())
 
     methods_to_patch = {
         "info_once": _print_info_once,
