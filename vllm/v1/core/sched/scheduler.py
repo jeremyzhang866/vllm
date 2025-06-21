@@ -407,6 +407,15 @@ class Scheduler(SchedulerInterface):
                             < num_new_tokens):
                         num_new_tokens = (
                             self.scheduler_config.long_prefill_token_threshold)
+
+                    # chunked prefill has to be enabled explicitly to allow
+                    # pooling requests to be chunked
+                    if not self.scheduler_config.chunked_prefill_enabled and \
+                        num_new_tokens > token_budget:
+                        self.waiting.popleft()
+                        skipped_waiting_requests.appendleft(request)
+                        continue
+
                     num_new_tokens = min(num_new_tokens, token_budget)
                     assert num_new_tokens > 0
 
@@ -712,6 +721,8 @@ class Scheduler(SchedulerInterface):
         logprobs = model_runner_output.logprobs
         prompt_logprobs_dict = model_runner_output.prompt_logprobs_dict
         num_scheduled_tokens = scheduler_output.num_scheduled_tokens
+        pooler_outputs = model_runner_output.pooler_output
+        num_nans_in_logits = model_runner_output.num_nans_in_logits
 
         new_running: list[Request] = []
         outputs: dict[int, list[EngineCoreOutput]] = defaultdict(list)
@@ -729,7 +740,8 @@ class Scheduler(SchedulerInterface):
                 continue
 
             req_index = model_runner_output.req_id_to_index[req_id]
-            generated_token_ids = sampled_token_ids[req_index]
+            generated_token_ids = sampled_token_ids[
+                req_index] if sampled_token_ids else []
 
             scheduled_spec_token_ids = (
                 scheduler_output.scheduled_spec_decode_tokens.get(req_id))
@@ -781,8 +793,17 @@ class Scheduler(SchedulerInterface):
                     del new_token_ids[num_new:]  # Trim new tokens if needed.
                     break
 
+            pooler_output = None
+            if pooler_outputs:
+                pooler_output = pooler_outputs[req_index]
+                stopped = check_stop(request, self.max_model_len,
+                                     pooler_output)
+                if stopped:
+                    kv_transfer_params = self._free_request(request)
+
             # Extract sample logprobs if needed.
-            if request.sampling_params.logprobs is not None and logprobs:
+            if request.sampling_params is not None \
+                and request.sampling_params.logprobs is not None and logprobs:
                 # NOTE: once we support N tokens per step (spec decode),
                 # the outer lists can be of length > 1.
                 new_logprobs = logprobs.slice(req_index, req_index + 1)
@@ -794,6 +815,10 @@ class Scheduler(SchedulerInterface):
                 # check above, so safe to ignore type warning
                 request.structured_output_request.grammar.accept_tokens(  # type: ignore[union-attr]
                     req_id, new_token_ids)
+
+            # spec_token_ids comes from the model runner output
+            if num_nans_in_logits is not None and req_id in num_nans_in_logits:
+                request.num_nans_in_logits = num_nans_in_logits[req_id]
 
             # Add newly generated spec token ids to the request.
             if spec_token_ids is not None:
@@ -807,7 +832,8 @@ class Scheduler(SchedulerInterface):
 
             # Get prompt logprobs for this request.
             prompt_logprobs_tensors = prompt_logprobs_dict.get(req_id)
-            if new_token_ids or kv_transfer_params:
+            if new_token_ids or pooler_output is not None \
+                or kv_transfer_params:
 
                 # Add EngineCoreOutput for this Request.
                 outputs[request.client_index].append(
@@ -817,6 +843,7 @@ class Scheduler(SchedulerInterface):
                         finish_reason=request.get_finished_reason(),
                         new_logprobs=new_logprobs,
                         new_prompt_logprobs_tensors=prompt_logprobs_tensors,
+                        pooling_output=pooler_output,
                         stop_reason=request.stop_reason,
                         events=request.take_events(),
                         kv_transfer_params=kv_transfer_params,
@@ -952,9 +979,11 @@ class Scheduler(SchedulerInterface):
         return SchedulerStats(
             num_running_reqs=len(self.running),
             num_waiting_reqs=len(self.waiting),
-            gpu_cache_usage=self.kv_cache_manager.usage,
+            kv_cache_usage=self.kv_cache_manager.usage,
             prefix_cache_stats=prefix_cache_stats,
             spec_decoding_stats=spec_decoding_stats,
+            num_corrupted_reqs=sum(req.is_output_corrupted
+                                   for req in self.running),
         )
 
     def make_spec_decoding_stats(
@@ -1020,6 +1049,7 @@ class Scheduler(SchedulerInterface):
         num_computed_tokens = min(num_computed_tokens, request.num_tokens)
         if num_computed_tokens == request.num_tokens:
             num_computed_tokens -= 1
+        # This will cache the blocks iff caching is enabled.
         self.kv_cache_manager.cache_blocks(request, num_computed_tokens)
 
         # Update the request state for scheduling.
