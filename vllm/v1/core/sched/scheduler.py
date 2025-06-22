@@ -248,7 +248,7 @@ class Scheduler(SchedulerInterface):
                     num_new_tokens,
                     num_draft_tokens=num_draft_tokens,
                     num_lookahead_tokens=self.num_lookahead_tokens,
-                    num_external_computed_token=0)
+                    num_external_computed_tokens=0)
                 if new_blocks is None:
                     # The request cannot be scheduled.
                     # Preempt the lowest-priority request.

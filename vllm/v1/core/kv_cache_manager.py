@@ -189,6 +189,7 @@ class KVCacheManager:
         num_draft_tokens: int = 0,
         num_lookahead_tokens: int = 0,
         delay_cache_blocks: bool = False,
+        num_external_computed_tokens: int = 0
     ) -> Optional[KVCacheBlocks]:
         """Add slots for a request with new tokens to append.
 
@@ -225,6 +226,10 @@ class KVCacheManager:
         Returns:
             A list of new allocated blocks.
         """
+        if self.log_stats:
+            assert self.prefix_cache_stats is not None
+            self.prefix_cache_stats.hits += num_external_computed_tokens
+
         if num_new_tokens == 0:
             raise ValueError("num_new_tokens must be greater than 0")
 
