@@ -1586,6 +1586,8 @@ class LLM:
                             pbar.update(n)
                         else:
                             pbar.update(1)
+                        if pbar.n == num_requests:
+                            pbar.refresh()
 
         if use_tqdm:
             pbar.close()
