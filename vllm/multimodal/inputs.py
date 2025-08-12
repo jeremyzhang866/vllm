@@ -13,8 +13,8 @@ from typing import (TYPE_CHECKING, Any, Literal, Optional, TypedDict, TypeVar,
 import numpy as np
 from typing_extensions import NotRequired, TypeAlias
 
-from vllm.jsontree import JSONTree, json_map_leaves
 from vllm.utils import LazyLoader, full_groupby, is_list_of
+from vllm.utils.jsontree import JSONTree, json_map_leaves
 
 if TYPE_CHECKING:
     import torch
@@ -57,10 +57,12 @@ which are treated as image embeddings;
 these are directly passed to the model without HF processing.
 """
 
-VideoItem: TypeAlias = Union[HfVideoItem, "torch.Tensor"]
+VideoItem: TypeAlias = Union[HfVideoItem, "torch.Tensor",
+                             tuple[HfVideoItem, dict[str, Any]]]
 """
-A `transformers.image_utils.VideoInput` representing a single video
-item, which can be passed to a HuggingFace `VideoProcessor`.
+A `transformers.video_utils.VideoInput` representing a single video item. 
+This can be passed to a HuggingFace `VideoProcessor` 
+with `transformers.video_utils.VideoMetadata`.
 
 Alternatively, a 3-D tensor or batch of 2-D tensors,
 which are treated as video embeddings;
